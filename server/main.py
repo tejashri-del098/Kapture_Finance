@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, Request, BackgroundTasks, Response
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from twilio.rest import Client
 
@@ -309,6 +310,108 @@ def execute_tool(session: dict, name: str, params: dict) -> dict:
 # -----------------------------------------------------------------------------
 # 5. Endpoints
 # -----------------------------------------------------------------------------
+@app.get("/", response_class=HTMLResponse)
+def index():
+    return """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Kapture Finance | AI Voicebot Demo</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: 'Inter', sans-serif;
+                background: linear-gradient(135deg, #0f172a, #1e293b);
+                color: #ffffff;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+            }
+            .container {
+                background: rgba(255, 255, 255, 0.05);
+                backdrop-filter: blur(15px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 20px;
+                padding: 50px;
+                text-align: center;
+                max-width: 650px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            }
+            h1 {
+                font-size: 2.8rem;
+                margin-bottom: 15px;
+                background: -webkit-linear-gradient(#38bdf8, #818cf8);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                font-weight: 800;
+            }
+            p {
+                color: #94a3b8;
+                font-size: 1.15rem;
+                line-height: 1.6;
+                margin-bottom: 30px;
+            }
+            .instructions {
+                margin-top: 30px;
+                text-align: left;
+                background: rgba(0,0,0,0.3);
+                padding: 25px;
+                border-radius: 12px;
+                font-size: 1rem;
+                color: #cbd5e1;
+                border: 1px solid rgba(255,255,255,0.05);
+            }
+            .links {
+                margin-top: 30px;
+                display: flex;
+                gap: 20px;
+                justify-content: center;
+            }
+            a.btn {
+                background: rgba(56, 189, 248, 0.1);
+                color: #38bdf8;
+                border: 1px solid #38bdf8;
+                padding: 12px 24px;
+                text-decoration: none;
+                font-weight: 600;
+                border-radius: 8px;
+                transition: all 0.2s ease;
+            }
+            a.btn:hover {
+                background: #38bdf8;
+                color: #0f172a;
+            }
+        </style>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container">
+            <h1>Kapture Finance</h1>
+            <p>Welcome to the <b>AI Delivery Intern</b> assignment demo. This is the secure backend orchestration server for <b>Maya</b>, our state-machine collections voicebot.</p>
+            
+            <p>If you are testing this project, please dial the phone number provided in the README, or use the Vapi share link provided by the candidate.</p>
+            
+            <div class="instructions">
+                <strong style="color: #fff;">Test Credentials:</strong><br><br>
+                • <b>Name:</b> Rahul Sharma<br>
+                • <b>ID Number (Last 4):</b> 4821<br><br>
+                <i>Security Note: Maya is strictly instructed to refuse to disclose debt amounts or send payment links until this ID is cryptographically verified by this backend server.</i>
+            </div>
+            
+            <div class="links">
+                <a href="/logs" class="btn">View Live Session Logs</a>
+                <a href="https://github.com/tejashri-del098/Kapture_Finance" class="btn" target="_blank">View GitHub Repo</a>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
 @app.get("/health")
 def health_check():
     """Lightweight endpoint for UptimeRobot."""
