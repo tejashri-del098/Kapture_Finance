@@ -6,7 +6,7 @@
       "parameters": {
         "type": "object",
         "properties": {
-          "idLast4": { "type": "string", "pattern": "^[0-9]{4}$", "description": "Last four digits of the loan account number or PAN." }
+          "idLast4": { "type": "string", "description": "Last four digits of the loan account number or PAN." }
         },
         "required": ["idLast4"],
         "additionalProperties": false

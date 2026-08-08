@@ -193,7 +193,7 @@ def execute_tool(session: dict, name: str, params: dict) -> dict:
             session["phase"] = Phase.AUTH
             
             # Treat ID digits as string for comparison, strip spaces
-            provided_id = str(params.get("idLast4", "")).replace(" ", "")
+            provided_id = str(params).replace(" ", "")
             id_matches = MOCK_CUSTOMER["idLast4"] in provided_id
             
             session["auth_attempts"] += 1
