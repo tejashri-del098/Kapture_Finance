@@ -8,6 +8,20 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from twilio.rest import Client
 
+def mask_pii(data: Any) -> Any:
+    """Recursively mask sensitive PII fields in dictionaries and lists."""
+    if isinstance(data, dict):
+        masked = {}
+        for k, v in data.items():
+            if k in ["idLast4", "phone", "accountId", "customerFirstName", "firstName", "number"]:
+                masked[k] = "****"
+            else:
+                masked[k] = mask_pii(v)
+        return masked
+    elif isinstance(data, list):
+        return [mask_pii(item) for item in data]
+    return data
+
 # -----------------------------------------------------------------------------
 # 1. Logging Configuration (Persistent to server.log)
 # -----------------------------------------------------------------------------
@@ -107,6 +121,12 @@ async def log_requests(request: Request, call_next):
     request._receive = receive
     
     body_str = body.decode("utf-8") if body else ""
+    try:
+        if body_str:
+            body_json = json.loads(body_str)
+            body_str = json.dumps(mask_pii(body_json))
+    except Exception:
+        pass
     logger.info(f"REQUEST {request.method} {request.url.path} {body_str}")
     
     response = await call_next(request)
@@ -427,7 +447,7 @@ async def vapi_webhook(request: Request):
     msg = body.get("message", body)
     
     # Store in raw_logs (cap at 10 to avoid memory leak)
-    raw_logs.append(body)
+    raw_logs.append(mask_pii(body))
     if len(raw_logs) > 10:
         raw_logs.pop(0)
     
@@ -448,7 +468,7 @@ async def vapi_webhook(request: Request):
     is_custom_tool = "toolCallList" in msg
     tool_calls = msg.get("toolWithToolCallList", msg.get("toolCallList", []))
     
-    logger.info(f"event=vapi_payload call_id={call_id} payload={json.dumps(msg)}")
+    logger.info(f"event=vapi_payload call_id={call_id} payload={json.dumps(mask_pii(msg))}")
     
     results = []
     
@@ -468,7 +488,7 @@ async def vapi_webhook(request: Request):
             params = raw_params
             
         result = execute_tool(session, name, params)
-        logger.info(f"event=tool_result call_id={call_id} name={name} result={json.dumps(result)}")
+        logger.info(f"event=tool_result call_id={call_id} name={name} result={json.dumps(mask_pii(result))}")
         
         results.append({
             "name": name,
@@ -486,7 +506,7 @@ def get_raw_logs():
 
 @app.get("/logs")
 def get_logs():
-    return sessions
+    return mask_pii(sessions)
 
 if __name__ == "__main__":
     import uvicorn
