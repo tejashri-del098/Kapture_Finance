@@ -24,10 +24,12 @@ def test_auth_gate_rejects_unverified_account_details():
             "callId": call_id,
             "toolWithToolCallList": [
                 {
-                    "toolCallId": "call_abc123",
-                    "function": {
-                        "name": "get_account_details",
-                        "arguments": "{}"
+                    "toolCall": {
+                        "id": "call_abc123",
+                        "function": {
+                            "name": "get_account_details",
+                            "arguments": "{}"
+                        }
                     }
                 }
             ]
@@ -59,10 +61,12 @@ def test_auth_gate_allows_verified_account_details():
             "callId": call_id,
             "toolWithToolCallList": [
                 {
-                    "toolCallId": "call_def456",
-                    "function": {
-                        "name": "verify_customer",
-                        "arguments": '{"idLast4": "4821"}'
+                    "toolCall": {
+                        "id": "call_def456",
+                        "function": {
+                            "name": "verify_customer",
+                            "arguments": '{"idLast4": "4821"}'
+                        }
                     }
                 }
             ]
@@ -77,10 +81,12 @@ def test_auth_gate_allows_verified_account_details():
             "callId": call_id,
             "toolWithToolCallList": [
                 {
-                    "toolCallId": "call_ghi789",
-                    "function": {
-                        "name": "get_account_details",
-                        "arguments": "{}"
+                    "toolCall": {
+                        "id": "call_ghi789",
+                        "function": {
+                            "name": "get_account_details",
+                            "arguments": "{}"
+                        }
                     }
                 }
             ]
