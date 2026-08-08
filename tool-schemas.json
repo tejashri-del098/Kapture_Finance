@@ -1,0 +1,99 @@
+{
+  "functions": [
+    {
+      "name": "verify_customer",
+      "description": "Verify the caller before any confidential account information is discussed. Use only after the caller supplies both factors.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "dateOfBirth": { "type": "string", "description": "Date of birth in YYYY-MM-DD format." },
+          "idLast4": { "type": "string", "pattern": "^[0-9]{4}$", "description": "Last four digits of the loan account number or PAN." }
+        },
+        "required": ["dateOfBirth", "idLast4"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_account_details",
+      "description": "Retrieve the verified caller's account facts. The server rejects this before verification.",
+      "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    {
+      "name": "log_promise_to_pay",
+      "description": "Log an explicit payment promise after the caller confirms a future date and amount.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "ptpDate": { "type": "string", "description": "Promised payment date in YYYY-MM-DD format." },
+          "ptpAmount": { "type": "number", "minimum": 1, "description": "Promised payment amount in INR." }
+        },
+        "required": ["ptpDate", "ptpAmount"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "send_payment_link",
+      "description": "Send a payment link only after log_promise_to_pay succeeded.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "channel": { "type": "string", "enum": ["sms", "whatsapp"], "description": "The verified caller's requested delivery channel." }
+        },
+        "required": ["channel"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "log_dispute",
+      "description": "Record a verified caller's dispute before escalation.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "reason": { "type": "string", "enum": ["amount_mismatch", "not_my_loan", "already_settled", "other"] },
+          "notes": { "type": "string", "description": "Brief neutral summary; omit sensitive credentials." }
+        },
+        "required": ["reason"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "escalate_to_agent",
+      "description": "Create a human-agent ticket for a verified caller when judgment or reconciliation is required.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "reason": { "type": "string", "enum": ["hardship", "dispute", "payment_verification", "hostile_or_human_request", "off_topic"] },
+          "summary": { "type": "string", "description": "Brief summary without DOB, ID digits, or unneeded PII." }
+        },
+        "required": ["reason"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mark_disposition",
+      "description": "Log the final call disposition immediately before ending a call.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "dispositionCode": {
+            "type": "string",
+            "enum": ["ptp_captured", "already_paid_claimed", "dispute_logged", "hardship_escalated", "dnc_opt_out", "wrong_number", "no_disclosure_unverified", "no_response", "voicemail_left", "technical_failure"]
+          },
+          "notes": { "type": "string" }
+        },
+        "required": ["dispositionCode"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "record_do_not_call",
+      "description": "Immediately suppress future calls when the caller requests no further calls.",
+      "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
+    },
+    {
+      "name": "record_wrong_person",
+      "description": "End safely when the person answering states they are not the intended customer.",
+      "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
+    }
+  ]
+}

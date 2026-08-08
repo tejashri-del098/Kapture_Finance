@@ -1,0 +1,32 @@
+{
+  "name": "Kapture Finance Collections — Maya (Demo)",
+  "firstMessage": "Hello, I’m Maya, an automated assistant calling from Kapture Finance. This call may be recorded. May I please speak with Rahul Sharma?",
+  "firstMessageMode": "assistant-speaks-first",
+  "server": {
+    "url": "https://YOUR-PUBLIC-HTTPS-URL/vapi"
+  },
+  "model": {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "messages": [
+      {
+        "role": "system",
+        "content": "Generated payload required: run npm run build:vapi to create vapi-assistant-payload.json with the final system prompt and function schemas."
+      }
+    ]
+  },
+  "transcriber": {
+    "provider": "deepgram",
+    "model": "nova-3",
+    "language": "multi",
+    "smartFormat": true,
+    "keywords": ["Kapture:3", "EMI:3", "PAN:3", "WhatsApp:2"]
+  },
+  "voice": {
+    "provider": "vapi",
+    "voiceId": "Elliot",
+    "version": 2,
+    "language": "auto"
+  },
+  "recordingEnabled": true
+}
