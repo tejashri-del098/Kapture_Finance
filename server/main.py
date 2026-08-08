@@ -323,6 +323,11 @@ async def vapi_webhook(request: Request):
     
     msg = body.get("message", body)
     
+    # Store in raw_logs (cap at 10 to avoid memory leak)
+    raw_logs.append(body)
+    if len(raw_logs) > 10:
+        raw_logs.pop(0)
+    
     # Extract Call ID and Phone
     call_info = msg.get("call", {})
     call_id = call_info.get("id") or msg.get("callId") or "unknown-call"
@@ -370,8 +375,14 @@ async def vapi_webhook(request: Request):
         
     return {"results": results}
 
+raw_logs = []
+
+@app.get("/rawlogs")
+def get_raw_logs():
+    return raw_logs
+
 @app.get("/logs")
-async def get_logs():
+def get_logs():
     return sessions
 
 if __name__ == "__main__":
