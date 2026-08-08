@@ -8,9 +8,38 @@ The core thesis of this submission is that a collections voicebot **cannot rely 
 
 ## Demo & Architecture
 
-- **Demo Video:** [Insert Loom link here]
-- **HLD Documents:** See `Kapture_Collections_Voicebot_HLD_Corrected.pdf` and the Architecture Diagrams in the root folder.
-- **Backend URL:** `https://kapture-finance.onrender.com/vapi`
+- **Backend Webhook URL:** `https://kapture-finance.onrender.com/vapi`
+- **Dashboard Logs URL:** `https://kapture-finance.onrender.com/logs`
+- **Raw Webhook Payloads (Debug):** `https://kapture-finance.onrender.com/rawlogs`
+
+### Architecture Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Vapi (LLM)
+    participant FastAPI (Server)
+    
+    User->>Vapi (LLM): "Hello"
+    Vapi (LLM)->>User: "Am I speaking with Rahul?"
+    User->>Vapi (LLM): "Yes"
+    Vapi (LLM)->>User: "Please confirm the last 4 digits of your loan account number."
+    User->>Vapi (LLM): "4821"
+    
+    Vapi (LLM)->>FastAPI (Server): POST /vapi { verify_customer: { idLast4: "4821" } }
+    FastAPI (Server)->>FastAPI (Server): Validate ID & Set Verified State
+    FastAPI (Server)-->>Vapi (LLM): { verified: true }
+    
+    Vapi (LLM)->>FastAPI (Server): POST /vapi { get_account_details: {} }
+    FastAPI (Server)->>FastAPI (Server): Check Verified State (Auth Gate)
+    FastAPI (Server)-->>Vapi (LLM): { emiAmount: 8499, dueDate: "2026-07-26" }
+    
+    Vapi (LLM)->>User: "Your EMI of 8499 is past due..."
+    User->>Vapi (LLM): "I will pay 8499 tomorrow."
+    
+    Vapi (LLM)->>FastAPI (Server): POST /vapi { log_promise_to_pay: { amount: 8499 } }
+    FastAPI (Server)-->>Vapi (LLM): { status: "logged" }
+```
 
 ## Setup & Configuration
 
@@ -22,8 +51,8 @@ The core thesis of this submission is that a collections voicebot **cannot rely 
 
 **Test Credentials:**
 - Name: Rahul Sharma
-- DOB: `1990-05-14`
-- Last 4 digits: `4821`
+- Valid ID Numbers (Last 4): `4821` or `2910`
+*(Note: Verification is strictly based on the ID number. DOB has been removed from the flow to reduce friction).*
 
 ## Design Choices
 
@@ -34,29 +63,26 @@ The core thesis of this submission is that a collections voicebot **cannot rely 
 
 ## Debugging & Root Cause Analysis
 
-During adversarial testing, I focused specifically on Vapi's orchestration layer by testing **Barge-ins (Over-talking)**. When the bot is interrupted mid-disclosure, the LLM often loses its place and attempts to repeat tool calls out of order.
+During integration testing with Vapi, we encountered a severe orchestration bug where the LLM would successfully extract the caller's ID numbers, but the FastAPI server would consistently reject the verification with `"No result returned"` or fail to find the parameters in the webhook payload.
 
 **Bug / Trace:**
-When interrupting the bot immediately after verification ("Wait, how much again?"), the LLM redundantly called `get_account_details` a second time, which in a poorly designed state machine could cause a reset or crash. 
+When monitoring the Vapi payload, we discovered that Vapi dynamically changes the structure of its JSON webhook payload depending on whether a tool is executed as a "Function" or a "Custom Tool", and whether `toolWithToolCallList` is used.
 
-Here is the exact trace from `server.log` showing the barge-in recovery:
-
-```log
-2026-08-08 14:17:56,000 REQUEST POST /vapi {"message": {"type": "tool-calls", "callId": "call_bargein_test_09", "toolWithToolCallList": [{"toolCallId": "call_1786178875992", "function": {"name": "verify_customer", "arguments": "{\"dateOfBirth\": \"1990-05-14\", \"idLast4\": \"4821\"}"}}]}}
-2026-08-08 14:17:56,001 event=session_created call_id=call_bargein_test_09 phone=None
-2026-08-08 14:17:56,001 event=tool_result call_id=call_bargein_test_09 name=verify_customer result={"verified": true, "attemptsLeft": 2, "accountId": "loan_rahul_001"}
-
-# First account details disclosure
-2026-08-08 14:17:56,511 REQUEST POST /vapi {"message": {"type": "tool-calls", "callId": "call_bargein_test_09", "toolWithToolCallList": [{"toolCallId": "call_1786178876506", "function": {"name": "get_account_details", "arguments": "{}"}}]}}
-2026-08-08 14:17:56,512 event=tool_result call_id=call_bargein_test_09 name=get_account_details result={"customerFirstName": "Rahul", "loanType": "Personal loan", "emiAmount": 8499, "currency": "INR", "dueDate": "2026-07-26", "daysPastDue": 12}
-
-# BARGE-IN: User interrupts, LLM confusedly triggers get_account_details again
-2026-08-08 14:17:57,022 REQUEST POST /vapi {"message": {"type": "tool-calls", "callId": "call_bargein_test_09", "toolWithToolCallList": [{"toolCallId": "call_1786178877019", "function": {"name": "get_account_details", "arguments": "{}"}}]}}
-2026-08-08 14:17:57,023 event=tool_result call_id=call_bargein_test_09 name=get_account_details result={"customerFirstName": "Rahul", "loanType": "Personal loan", "emiAmount": 8499, "currency": "INR", "dueDate": "2026-07-26", "daysPastDue": 12}
+Initially, our server extraction logic looked like this:
+```python
+func_obj = item.get("function") or item.get("toolCall", {}).get("function")
 ```
+When Vapi sent the `toolWithToolCallList` array, the objects inside contained **both** the tool schema (under `"function"`) AND the actual tool invocation (under `"toolCall": {"function": {...}}`).
+Because our logic checked `"function"` first, it accidentally extracted the **tool schema** instead of the **tool invocation**. The schema obviously contained no `arguments`, causing the server to perceive an empty parameter object `{}` on every call.
 
 **Fix & Resolution:**
-Because the FastAPI backend is designed to be completely idempotent for read operations during the `NEGOTIATION` phase, it safely re-supplied the data without incrementing auth attempts or crashing. The orchestration layer seamlessly resumed the conversation. No code changes were needed because the state-machine design anticipated out-of-order tool calls.
+We implemented an ultra-robust extraction fallback and explicitly swapped the precedence to check the inner envelope (`toolCall`) first before falling back to the outer envelope:
+```python
+func_obj = item.get("toolCall", {}).get("function") or item.get("function") or item
+```
+Additionally, we enforced OpenAI's **Strict Mode / Structured Outputs** in the Vapi dashboard for the `verify_customer` tool, forcing the LLM to mathematically guarantee the presence of the `idLast4` string parameter, preventing it from passing empty objects when users spoke with spaces (e.g., "4 8 2 1").
+
+
 
 ## Evaluation Matrix
 
