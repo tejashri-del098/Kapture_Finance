@@ -124,6 +124,20 @@ stateDiagram-v2
 
 ## Debugging & Root Cause Analysis
 
+For troubleshooting, always use `/rawlogs` to see the actual JSON envelope received from Vapi. If nested incorrectly, the LLM logic will fail silently on backend validation.
+
+---
+
+## Live Demonstration
+
+Here is a live transcript of Maya in action, successfully verifying the customer, fetching account details, and escalating to a human agent after standard negotiation:
+
+<p align="center">
+  <img src="images/chat_1.png" width="30%" />
+  <img src="images/chat_2.png" width="30%" />
+  <img src="images/chat_3.png" width="30%" />
+</p>
+
 During integration testing with Vapi, we encountered a severe orchestration bug where the LLM would successfully extract the caller's ID numbers, but the FastAPI server would consistently reject the verification with `"No result returned"` or fail to find the parameters in the webhook payload.
 
 **Bug / Trace:**
