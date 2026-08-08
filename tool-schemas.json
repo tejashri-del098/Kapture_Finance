@@ -2,14 +2,13 @@
   "functions": [
     {
       "name": "verify_customer",
-      "description": "Verify the caller before any confidential account information is discussed. Use only after the caller supplies both factors.",
+      "description": "Verify the caller before any confidential account information is discussed. Use only after the caller supplies the requested factor.",
       "parameters": {
         "type": "object",
         "properties": {
-          "dateOfBirth": { "type": "string", "description": "Date of birth in YYYY-MM-DD format." },
           "idLast4": { "type": "string", "pattern": "^[0-9]{4}$", "description": "Last four digits of the loan account number or PAN." }
         },
-        "required": ["dateOfBirth", "idLast4"],
+        "required": ["idLast4"],
         "additionalProperties": false
       }
     },

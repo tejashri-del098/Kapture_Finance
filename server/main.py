@@ -43,7 +43,6 @@ class Disposition:
 MOCK_CUSTOMER = {
     "phone": "+919302174610",
     "firstName": "Rahul",
-    "dateOfBirth": "2005-11-22",
     "idLast4": "4821",
     "accountId": "loan_rahul_001",
     "loanType": "Personal loan",
@@ -131,7 +130,7 @@ def require_verified(session: dict, operation: str) -> Optional[dict]:
     append_event(session, "policy_blocked", {"operation": operation})
     return {
         "error": "auth_required",
-        "message": f"Operation '{operation}' is unavailable until identity verification succeeds. Ask the user for their DOB and last 4 digits of ID before proceeding."
+        "message": f"Operation '{operation}' is unavailable until identity verification succeeds. Ask the user for the last 4 digits of their ID before proceeding."
     }
 
 def close_call(session: dict, code: str, notes: str = "") -> dict:
@@ -193,16 +192,11 @@ def execute_tool(session: dict, name: str, params: dict) -> dict:
                 return {"status": "POLICY_BLOCKED", "reason": "The call is already closed."}
             session["phase"] = Phase.AUTH
             
-            provided_dob = str(params.get("dateOfBirth", "")).lower()
-            dob_matches = ("2005" in provided_dob) and (("11" in provided_dob) or ("nov" in provided_dob)) and ("22" in provided_dob)
-            if params.get("dateOfBirth") == MOCK_CUSTOMER["dateOfBirth"]:
-                dob_matches = True
-                
             # Treat ID digits as string for comparison
             id_matches = str(params.get("idLast4", "")) == MOCK_CUSTOMER["idLast4"]
             
             session["auth_attempts"] += 1
-            is_valid = dob_matches and id_matches
+            is_valid = id_matches
             
             append_event(session, "verify_customer", {
                 "attempt": session["auth_attempts"],
