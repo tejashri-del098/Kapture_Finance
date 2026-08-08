@@ -201,7 +201,8 @@ def execute_tool(session: dict, name: str, params: dict) -> dict:
             
             append_event(session, "verify_customer", {
                 "attempt": session["auth_attempts"],
-                "result": "verified" if is_valid else "failed"
+                "result": "verified" if is_valid else "failed",
+                "params": params
             })
             
             if is_valid:

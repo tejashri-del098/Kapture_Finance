@@ -41,7 +41,8 @@ def test_auth_gate_rejects_unverified_account_details():
     assert "results" in data
     assert len(data["results"]) == 1
     
-    result_obj = data["results"][0]["result"]
+    result_str = data["results"][0]["result"]
+    result_obj = json.loads(result_str)
     
     # Assert the auth gate successfully blocked the request
     assert result_obj.get("error") == "auth_required"
@@ -87,7 +88,8 @@ def test_auth_gate_allows_verified_account_details():
     }
     response = client.post("/vapi", json=details_payload)
     data = response.json()
-    result_obj = data["results"][0]["result"]
+    result_str = data["results"][0]["result"]
+    result_obj = json.loads(result_str)
     
     # Assert we got the actual data since we verified first
     assert "error" not in result_obj
