@@ -43,7 +43,7 @@ class Disposition:
 MOCK_CUSTOMER = {
     "phone": "+919302174610",
     "firstName": "Rahul",
-    "dateOfBirth": "1990-05-14",
+    "dateOfBirth": "2005-11-22",
     "idLast4": "4821",
     "accountId": "loan_rahul_001",
     "loanType": "Personal loan",
