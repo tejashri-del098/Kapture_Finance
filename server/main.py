@@ -367,6 +367,10 @@ async def vapi_webhook(request: Request):
         
     return {"results": results}
 
+@app.get("/logs")
+async def get_logs():
+    return sessions
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 3000))
