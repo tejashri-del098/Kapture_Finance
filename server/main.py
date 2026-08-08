@@ -350,8 +350,8 @@ async def vapi_webhook(request: Request):
     results = []
     
     for item in tool_calls:
-        # Handle different Vapi payload shapes robustly
-        func_obj = item.get("function") or item.get("toolCall", {}).get("function") or item
+        # Extract the actual tool invocation, prioritizing toolCall (which holds the invocation in toolWithToolCallList)
+        func_obj = item.get("toolCall", {}).get("function") or item.get("function") or item
         name = func_obj.get("name")
         call_id_val = item.get("toolCallId") or item.get("toolCall", {}).get("id") or item.get("id")
         
