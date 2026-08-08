@@ -155,7 +155,7 @@ stateDiagram-v2
 
 ### Test Credentials:
 - **Name:** Rahul Sharma
-- **Valid ID Numbers (Last 4):** `4821` or `2910`
+- **Valid ID Number (Last 4):** `4821`
 *(Note: Verification is strictly based on the ID number. DOB has been removed from the flow to reduce friction).*
 
 ---
