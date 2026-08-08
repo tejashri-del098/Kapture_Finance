@@ -340,6 +340,8 @@ async def vapi_webhook(request: Request):
     is_custom_tool = "toolCallList" in msg
     tool_calls = msg.get("toolWithToolCallList", msg.get("toolCallList", []))
     
+    logger.info(f"event=vapi_payload call_id={call_id} payload={json.dumps(msg)}")
+    
     results = []
     
     for item in tool_calls:
