@@ -428,6 +428,56 @@ def index():
                 <a href="https://github.com/tejashri-del098/Kapture_Finance" class="btn" target="_blank">View GitHub Repo</a>
             </div>
         </div>
+        
+        <!-- Vapi Web SDK for Browser Calling -->
+        <script>
+          var vapiInstance = null;
+          const assistant = "29fbf774-91c7-45db-9ea1-d69f33672661";
+          const apiKey = "80c287a8-4f15-4eda-aac1-b955c0184f8d";
+
+          (function (d, t) {
+            var g = document.createElement(t),
+              s = d.getElementsByTagName(t)[0];
+            g.src = "https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js";
+            g.defer = true;
+            g.async = true;
+            s.parentNode.insertBefore(g, s);
+
+            g.onload = function () {
+              vapiInstance = window.vapiSDK.run({
+                apiKey: apiKey,
+                assistant: assistant,
+                config: {
+                  position: "bottom-right",
+                  offset: "40px",
+                  width: "50px",
+                  height: "50px",
+                  idle: {
+                    color: "rgb(56, 189, 248)",
+                    type: "pill",
+                    title: "Test the Voicebot",
+                    subtitle: "Talk to Maya directly in your browser",
+                    icon: "https://unpkg.com/lucide-static@0.321.0/icons/phone.svg",
+                  },
+                  loading: {
+                    color: "rgb(93, 124, 202)",
+                    type: "pill",
+                    title: "Connecting...",
+                    subtitle: "Please wait",
+                    icon: "https://unpkg.com/lucide-static@0.321.0/icons/loader-2.svg",
+                  },
+                  active: {
+                    color: "rgb(239, 68, 68)",
+                    type: "pill",
+                    title: "Call is active...",
+                    subtitle: "Click to end the call",
+                    icon: "https://unpkg.com/lucide-static@0.321.0/icons/phone-off.svg",
+                  },
+                },
+              });
+            };
+          })(document, "script");
+        </script>
     </body>
     </html>
     """
