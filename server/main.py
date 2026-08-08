@@ -192,8 +192,9 @@ def execute_tool(session: dict, name: str, params: dict) -> dict:
                 return {"status": "POLICY_BLOCKED", "reason": "The call is already closed."}
             session["phase"] = Phase.AUTH
             
-            # Treat ID digits as string for comparison
-            id_matches = str(params.get("idLast4", "")) == MOCK_CUSTOMER["idLast4"]
+            # Treat ID digits as string for comparison, strip spaces
+            provided_id = str(params.get("idLast4", "")).replace(" ", "")
+            id_matches = MOCK_CUSTOMER["idLast4"] in provided_id
             
             session["auth_attempts"] += 1
             is_valid = id_matches
@@ -358,14 +359,10 @@ async def vapi_webhook(request: Request):
         result = execute_tool(session, name, params)
         logger.info(f"event=tool_result call_id={call_id} name={name} result={json.dumps(result)}")
         
-        if is_custom_tool:
-            # Custom tools expect the raw object back directly
-            return result
-            
         results.append({
             "name": name,
             "toolCallId": call_id_val,
-            "result": json.dumps(result)
+            "result": result
         })
         
     return {"results": results}
