@@ -341,7 +341,9 @@ async def vapi_webhook(request: Request):
         logger.info(f"event=vapi_event type={msg_type} call_id={call_id}")
         return {"received": True}
         
+    is_custom_tool = "toolCallList" in msg
     tool_calls = msg.get("toolWithToolCallList", msg.get("toolCallList", []))
+    
     results = []
     
     for item in tool_calls:
@@ -362,6 +364,10 @@ async def vapi_webhook(request: Request):
         result = execute_tool(session, name, params)
         logger.info(f"event=tool_result call_id={call_id} name={name} result={json.dumps(result)}")
         
+        if is_custom_tool:
+            # Custom tools expect the raw object back directly
+            return result
+            
         results.append({
             "name": name,
             "toolCallId": call_id_val,
