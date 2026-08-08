@@ -62,7 +62,7 @@ def test_auth_gate_allows_verified_account_details():
                     "toolCallId": "call_def456",
                     "function": {
                         "name": "verify_customer",
-                        "arguments": '{"dateOfBirth": "1990-05-14", "idLast4": "4821"}'
+                        "arguments": '{"dateOfBirth": "2005-11-22", "idLast4": "4821"}'
                     }
                 }
             ]
