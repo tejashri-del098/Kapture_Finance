@@ -7,13 +7,16 @@
 
 ## 🚀 Live Demonstration
 
-<a href="https://www.loom.com/share/5f57bffecc1d42b2a5185a114510f539">
-  <img src="https://img.shields.io/badge/▶_Watch_Live_Demo_on_Loom-FF4F00?style=for-the-badge&logo=loom&logoColor=white" alt="Watch Demo" />
+### 1. Happy Path Demo (Promise to Pay)
+<a href="https://www.loom.com/share/b60e6a37cb9b449db2f6574d4825d541">
+  <img src="https://img.shields.io/badge/▶_Watch_Happy_Path_on_Loom-FF4F00?style=for-the-badge&logo=loom&logoColor=white" alt="Watch Happy Path Demo" />
 </a>
 <br/>
 
-> **Note on the Demo Video:** Due to an audio capture issue in Loom, the voicebot's (Maya's) voice is not audible in the recording. However, you can clearly see the live transcript generating in real-time on the dashboard, proving that she is successfully speaking and processing the entire conversation. Additionally, I exhausted my Vapi free trial credits during extensive testing and was unable to record the second video demonstrating the "Wrong Person" edge case. However, all edge cases (DNC, Wrong Person, Dispute) are fully handled by the state machine and tool schemas in this repo.
-
+### 2. Edge Case Demo (Wrong Person)
+<a href="https://www.loom.com/share/5c8754f435294bee85491e4901d84187">
+  <img src="https://img.shields.io/badge/▶_Watch_Edge_Case_on_Loom-FF4F00?style=for-the-badge&logo=loom&logoColor=white" alt="Watch Edge Case Demo" />
+</a>
 <br/>
 
 **Want to try it yourself?**
