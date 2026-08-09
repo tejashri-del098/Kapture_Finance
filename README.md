@@ -17,11 +17,7 @@
 <a href="https://www.loom.com/share/5c8754f435294bee85491e4901d84187">
   <img src="https://img.shields.io/badge/▶_Watch_Edge_Case_on_Loom-FF4F00?style=for-the-badge&logo=loom&logoColor=white" alt="Watch Edge Case Demo" />
 </a>
-<br/>
 
-**Want to try it yourself?**
-You can view the interactive dashboard, check out the live logs, and get the test credentials at:
-👉 **[Kapture Finance Live Dashboard](https://kapture-finance.onrender.com/)**
 
 Here is a live transcript of Maya successfully verifying a customer, fetching account details, and escalating to a human agent after standard negotiation:
 
