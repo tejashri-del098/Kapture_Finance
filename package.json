@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "scripts": {
+    "build:vapi": "node scripts/build-vapi-payload.mjs"
+  }
+}

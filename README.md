@@ -150,11 +150,10 @@ stateDiagram-v2
 
 ## 🛠️ Setup & Configuration
 
-1. Create a Vapi Assistant and configure it with an OpenAI model (e.g., `gpt-4o` for fast function calling) and Deepgram Nova-2 transcriber (strong EN/HI code-switching).
-2. Set the assistant's System Prompt using the contents of `system-prompt.md`.
-3. Add the tools from `tool-schemas.json`.
-4. Set the assistant's Server URL to `https://kapture-finance.onrender.com/vapi`.
-5. Ensure the Vapi phone number matches the Twilio number if testing the real Twilio SMS fallback.
+1. Build the importable assistant payload: `npm run build:vapi`. For another deployment URL, use `VAPI_SERVER_URL=https://your-public-host/vapi npm run build:vapi`.
+2. Import `vapi-assistant-payload.json` into Vapi, or configure its prompt and tools manually from `system-prompt.md` and `tool-schemas.json`.
+3. Confirm the assistant Server URL is your public `/vapi` endpoint (the default is `https://kapture-finance.onrender.com/vapi`).
+4. Ensure the Vapi phone number matches the Twilio number if testing the real Twilio SMS fallback.
 
 ### Test Credentials:
 - **Name:** Rahul Sharma

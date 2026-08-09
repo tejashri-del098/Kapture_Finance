@@ -3,7 +3,7 @@
   "firstMessage": "Hello, I’m Maya, an automated assistant calling from Kapture Finance. This call may be recorded. May I please speak with Rahul Sharma?",
   "firstMessageMode": "assistant-speaks-first",
   "server": {
-    "url": "https://YOUR-PUBLIC-HTTPS-URL/vapi"
+    "url": "https://kapture-finance.onrender.com/vapi"
   },
   "model": {
     "provider": "openai",

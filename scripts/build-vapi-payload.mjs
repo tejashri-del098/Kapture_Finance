@@ -8,9 +8,13 @@ const promptMarkdown = await readFile(new URL("../system-prompt.md", import.meta
 template.model.messages = [{ role: "system", content: promptMarkdown }];
 template.model.functions = schemas.functions;
 
+if (process.env.VAPI_SERVER_URL) {
+  template.server.url = process.env.VAPI_SERVER_URL;
+}
+
 await writeFile(
   new URL("../vapi-assistant-payload.json", import.meta.url),
   `${JSON.stringify(template, null, 2)}\n`
 );
 
-console.info("Created vapi-assistant-payload.json. Replace YOUR-PUBLIC-HTTPS-URL before importing it into Vapi.");
+console.info(`Created vapi-assistant-payload.json with server URL: ${template.server.url}`);

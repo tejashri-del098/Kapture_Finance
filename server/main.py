@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+from hmac import compare_digest
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, Request, BackgroundTasks, Response
@@ -213,9 +214,15 @@ def execute_tool(session: dict, name: str, params: dict) -> dict:
                 return {"status": "POLICY_BLOCKED", "reason": "The call is already closed."}
             session["phase"] = Phase.AUTH
             
-            # Treat ID digits as string for comparison, strip spaces
-            provided_id = str(params).replace(" ", "")
-            id_matches = MOCK_CUSTOMER["idLast4"] in provided_id
+            # Only the idLast4 argument is an authentication factor.  Do not
+            # search the whole parameters object: a different argument must
+            # never be able to make authentication succeed accidentally.
+            provided_id = "".join(str(params.get("idLast4", "")).split())
+            id_matches = (
+                len(provided_id) == 4
+                and provided_id.isdigit()
+                and compare_digest(provided_id, MOCK_CUSTOMER["idLast4"])
+            )
             
             session["auth_attempts"] += 1
             is_valid = id_matches
@@ -330,6 +337,50 @@ def execute_tool(session: dict, name: str, params: dict) -> dict:
 # -----------------------------------------------------------------------------
 # 5. Endpoints
 # -----------------------------------------------------------------------------
+def parse_tool_parameters(raw_params: Any) -> dict:
+    """Return a parameters object from the Vapi/OpenAI tool-call variants."""
+    if isinstance(raw_params, str):
+        try:
+            raw_params = json.loads(raw_params)
+        except json.JSONDecodeError:
+            return {}
+    return raw_params if isinstance(raw_params, dict) else {}
+
+
+def extract_vapi_tool_call(item: Any) -> tuple[Optional[str], Optional[str], dict]:
+    """Normalize legacy and current Vapi tool-call payloads.
+
+    Current Vapi function tools use ``toolCall.function.parameters``. Older
+    assistant ``model.functions`` payloads may instead use
+    ``toolCall.function.arguments`` or top-level ``toolCallList`` fields.
+    """
+    if not isinstance(item, dict):
+        return None, None, {}
+
+    tool_call = item.get("toolCall")
+    if not isinstance(tool_call, dict):
+        tool_call = {}
+    function = tool_call.get("function") or item.get("function")
+    if not isinstance(function, dict):
+        function = {}
+
+    name = function.get("name") or tool_call.get("name") or item.get("name")
+    tool_call_id = item.get("toolCallId") or tool_call.get("id") or item.get("id")
+
+    raw_params = (
+        function.get("parameters")
+        if "parameters" in function
+        else function.get("arguments")
+        if "arguments" in function
+        else tool_call.get("parameters")
+        if "parameters" in tool_call
+        else tool_call.get("arguments")
+        if "arguments" in tool_call
+        else item.get("parameters", item.get("arguments", {}))
+    )
+    return name, tool_call_id, parse_tool_parameters(raw_params)
+
+
 @app.get("/", response_class=HTMLResponse)
 def index():
     return """
@@ -515,7 +566,6 @@ async def vapi_webhook(request: Request):
         logger.info(f"event=vapi_event type={msg_type} call_id={call_id}")
         return {"received": True}
         
-    is_custom_tool = "toolCallList" in msg
     tool_calls = msg.get("toolWithToolCallList", msg.get("toolCallList", []))
     
     logger.info(f"event=vapi_payload call_id={call_id} payload={json.dumps(mask_pii(msg))}")
@@ -523,27 +573,19 @@ async def vapi_webhook(request: Request):
     results = []
     
     for item in tool_calls:
-        # Extract the actual tool invocation, prioritizing toolCall (which holds the invocation in toolWithToolCallList)
-        func_obj = item.get("toolCall", {}).get("function") or item.get("function") or item
-        name = func_obj.get("name")
-        call_id_val = item.get("toolCallId") or item.get("toolCall", {}).get("id") or item.get("id")
-        
-        raw_params = func_obj.get("arguments") or item.get("parameters", {})
-        if isinstance(raw_params, str):
-            try:
-                params = json.loads(raw_params)
-            except json.JSONDecodeError:
-                params = {}
+        name, tool_call_id, params = extract_vapi_tool_call(item)
+        if not name:
+            result = {"error": "invalid_tool_call", "message": "Tool call is missing a function name."}
         else:
-            params = raw_params
-            
-        result = execute_tool(session, name, params)
+            result = execute_tool(session, name, params)
         logger.info(f"event=tool_result call_id={call_id} name={name} result={json.dumps(mask_pii(result))}")
         
         results.append({
             "name": name,
-            "toolCallId": call_id_val,
-            "result": result if is_custom_tool else json.dumps(result)
+            "toolCallId": tool_call_id,
+            # Vapi expects result to be a string even when the tool output is
+            # structured JSON. This also gives the model a consistent format.
+            "result": json.dumps(result, separators=(",", ":"))
         })
         
     return {"results": results}

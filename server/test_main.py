@@ -100,3 +100,60 @@ def test_auth_gate_allows_verified_account_details():
     # Assert we got the actual data since we verified first
     assert "error" not in result_obj
     assert result_obj.get("emiAmount") == 8499
+
+def test_current_vapi_function_payload_verifies_last_four_digits():
+    """Vapi's current Function-tool payload uses function.parameters."""
+    sessions.clear()
+    payload = {
+        "message": {
+            "type": "tool-calls",
+            "call": {"id": "test_current_vapi_payload"},
+            "toolWithToolCallList": [
+                {
+                    "toolCall": {
+                        "id": "call_current_vapi",
+                        "type": "function",
+                        "function": {
+                            "name": "verify_customer",
+                            "parameters": {"idLast4": "4821"}
+                        }
+                    }
+                }
+            ],
+            "toolCallList": [
+                {
+                    "id": "call_current_vapi",
+                    "name": "verify_customer",
+                    "arguments": {"idLast4": "4821"}
+                }
+            ]
+        }
+    }
+
+    response = client.post("/vapi", json=payload)
+    assert response.status_code == 200
+    result = response.json()["results"][0]
+    assert result["toolCallId"] == "call_current_vapi"
+    assert isinstance(result["result"], str)
+    assert json.loads(result["result"])["verified"] is True
+
+
+def test_verification_rejects_id_in_an_unrelated_argument():
+    sessions.clear()
+    payload = {
+        "message": {
+            "type": "tool-calls",
+            "call": {"id": "test_wrong_argument"},
+            "toolCallList": [
+                {
+                    "id": "call_wrong_argument",
+                    "name": "verify_customer",
+                    "arguments": {"notes": "4821"}
+                }
+            ]
+        }
+    }
+
+    response = client.post("/vapi", json=payload)
+    result = json.loads(response.json()["results"][0]["result"])
+    assert result["verified"] is False
