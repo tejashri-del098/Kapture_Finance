@@ -11,6 +11,9 @@
   <img src="https://img.shields.io/badge/▶_Watch_Live_Demo_on_Loom-FF4F00?style=for-the-badge&logo=loom&logoColor=white" alt="Watch Demo" />
 </a>
 <br/>
+
+> **Note on the Demo Video:** Due to a microphone capture issue during recording, my voice is not audible in the video, but you can see the bot successfully responding to my voice inputs in real-time. Additionally, I exhausted my Vapi free trial credits during extensive testing and was unable to record the second video demonstrating the "Wrong Person" edge case. However, all edge cases (DNC, Wrong Person, Dispute) are fully handled by the state machine and tool schemas in this repo.
+
 <br/>
 
 **Want to try it yourself?**
