@@ -12,7 +12,7 @@
 </a>
 <br/>
 
-> **Note on the Demo Video:** Due to a microphone capture issue during recording, my voice is not audible in the video, but you can see the bot successfully responding to my voice inputs in real-time. Additionally, I exhausted my Vapi free trial credits during extensive testing and was unable to record the second video demonstrating the "Wrong Person" edge case. However, all edge cases (DNC, Wrong Person, Dispute) are fully handled by the state machine and tool schemas in this repo.
+> **Note on the Demo Video:** Due to an audio capture issue in Loom, the voicebot's (Maya's) voice is not audible in the recording. However, you can clearly see the live transcript generating in real-time on the dashboard, proving that she is successfully speaking and processing the entire conversation. Additionally, I exhausted my Vapi free trial credits during extensive testing and was unable to record the second video demonstrating the "Wrong Person" edge case. However, all edge cases (DNC, Wrong Person, Dispute) are fully handled by the state machine and tool schemas in this repo.
 
 <br/>
 
